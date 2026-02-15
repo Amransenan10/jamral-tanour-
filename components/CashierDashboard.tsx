@@ -1,5 +1,6 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { User, Transaction, LoyaltyConfig } from '../types';
 import { formatCurrency } from '../constants';
 import { supabase } from '../supabaseClient';
@@ -19,10 +20,61 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
   const [lookupLoading, setLookupLoading] = useState(false);
   const successTimeoutRef = useRef<number | null>(null);
 
-  const startScanner = () => {
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current.stop().catch(console.error);
+      }
+    };
+  }, []);
+
+  const startScanner = async () => {
     setIsScanning(true);
-    // محاكاة استلام بيانات الكاميرا
-    setTimeout(() => handleLookup("0501234567"), 3000);
+    setCameraError(null);
+
+    // تأخير بسيط لضمان رندر الـ div
+    setTimeout(async () => {
+      try {
+        const scanner = new Html5Qrcode("reader");
+        scannerRef.current = scanner;
+
+        await scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          (decodedText) => {
+            // نجاح المسح
+            handleLookup(decodedText);
+            stopScanner();
+          },
+          () => {
+            // فشل مسح الفريم (تجاهل)
+          }
+        );
+      } catch (err: any) {
+        console.error("Camera Error:", err);
+        setCameraError(err.message || "فشل فتح الكاميرا. تأكد من إعطاء الصلاحيات.");
+        setIsScanning(false);
+      }
+    }, 100);
+  };
+
+  const stopScanner = async () => {
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      try {
+        await scannerRef.current.stop();
+        setIsScanning(false);
+      } catch (err) {
+        console.error("Stop Error:", err);
+      }
+    } else {
+      setIsScanning(false);
+    }
   };
 
   const handleLookup = async (phone: string) => {
@@ -123,23 +175,38 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
           <div className={`relative overflow-hidden rounded-[2.5rem] border-2 transition-all duration-500 flex flex-col items-center justify-center min-h-[400px] ${isScanning ? 'border-orange-500 bg-black' : 'border-zinc-800 border-dashed bg-zinc-900/30'}`}>
             {isScanning ? (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center">
-                <div className="absolute inset-0 bg-black/60"></div>
-                <div className="relative w-64 h-64 z-20">
-                  <div className="absolute inset-0 bg-transparent rounded-2xl ring-[2000px] ring-black/60"></div>
-                  <div className="absolute top-0 left-0 w-12 h-12 border-t-[5px] border-l-[5px] border-orange-500 rounded-tl-3xl shadow-[0_0_15px_rgba(234,88,12,0.5)]"></div>
-                  <div className="absolute top-0 right-0 w-12 h-12 border-t-[5px] border-r-[5px] border-orange-500 rounded-tr-3xl shadow-[0_0_15px_rgba(234,88,12,0.5)]"></div>
-                  <div className="absolute bottom-0 left-0 w-12 h-12 border-b-[5px] border-l-[5px] border-orange-500 rounded-bl-3xl shadow-[0_0_15px_rgba(234,88,12,0.5)]"></div>
-                  <div className="absolute bottom-0 right-0 w-12 h-12 border-b-[5px] border-r-[5px] border-orange-500 rounded-br-3xl shadow-[0_0_15px_rgba(234,88,12,0.5)]"></div>
-                  <div className="absolute top-0 left-2 right-2 h-[2px] bg-orange-500 animate-scan opacity-80 shadow-[0_0_20px_rgba(234,88,12,1)]"></div>
+                <div id="reader" className="w-full h-full"></div>
+
+                {/* Overlay layer */}
+                <div className="absolute inset-0 pointer-events-none z-20">
+                  <div className="absolute inset-0 bg-transparent rounded-2xl ring-[2000px] ring-black/60 shadow-inner"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-orange-500 rounded-3xl z-30">
+                    <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-orange-500 -ml-1 -mt-1 rounded-tl-2xl"></div>
+                    <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-orange-500 -mr-1 -mt-1 rounded-tr-2xl"></div>
+                    <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-orange-500 -ml-1 -mb-1 rounded-bl-2xl"></div>
+                    <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-orange-500 -mr-1 -mb-1 rounded-br-2xl"></div>
+                    <div className="absolute top-0 left-2 right-2 h-[2px] bg-orange-500 animate-scan opacity-80 shadow-[0_0_20px_rgba(234,88,12,1)]"></div>
+                  </div>
                 </div>
-                <p className="relative z-20 mt-8 text-white font-bold bg-black/40 px-6 py-2 rounded-full border border-white/10 backdrop-blur-md">ضع كود الـ QR داخل الإطار</p>
-                <button onClick={() => setIsScanning(false)} className="absolute bottom-8 z-20 text-zinc-400 font-bold hover:text-white transition-colors">إلغاء المسح</button>
+
+                <p className="absolute bottom-24 z-30 text-white font-bold bg-black/40 px-6 py-2 rounded-full border border-white/10 backdrop-blur-md">ضع كود الـ QR داخل الإطار</p>
+                <button
+                  onClick={stopScanner}
+                  className="absolute bottom-8 z-30 bg-black/60 text-white px-8 py-3 rounded-2xl hover:bg-black/80 transition-all font-bold"
+                >
+                  إلغاء المسح
+                </button>
               </div>
             ) : (
               <div className="text-center p-8">
                 <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 text-zinc-600">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h3m-3 0H9m11-3a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-5z" /></svg>
                 </div>
+                {cameraError && (
+                  <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-2xl text-red-500 text-sm font-bold">
+                    {cameraError}
+                  </div>
+                )}
                 <button onClick={startScanner} className="bg-orange-600 hover:bg-orange-500 text-white font-black px-10 py-4 rounded-2xl shadow-lg transition-all active:scale-95">فتح الكاميرا للمسح</button>
               </div>
             )}
