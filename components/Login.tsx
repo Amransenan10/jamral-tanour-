@@ -112,12 +112,16 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-white overflow-hidden relative">
       <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full h-64 bg-orange-600/10 blur-[100px] rounded-full"></div>
 
-      <div className="w-24 h-24 bg-zinc-900 rounded-3xl flex items-center justify-center shadow-[0_0_50px_rgba(234,88,12,0.2)] border border-orange-500/20 mb-8 overflow-hidden animate-pulse">
-        <img src="/logo.png" alt="جمر التنور" className="w-20 h-20 object-contain" />
+      <div className="relative mb-8 group">
+        <div className="absolute inset-0 bg-orange-600/20 blur-[40px] rounded-full group-hover:bg-orange-600/30 transition-all duration-700"></div>
+        <div className="relative w-48 h-48 flex items-center justify-center overflow-hidden transition-transform duration-700 hover:scale-105">
+          <img
+            src="/logo.png"
+            alt="جمر التنور"
+            className="w-full h-full object-contain"
+          />
+        </div>
       </div>
-
-      <h1 className="text-3xl font-black mb-2 tracking-tighter">جمر التنور</h1>
-      <p className="text-zinc-500 mb-8 text-sm">نظام الولاء السحابي المتكامل</p>
 
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6 relative z-10">
         <div className="bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800 flex gap-1">
