@@ -12,16 +12,16 @@ export interface User {
 }
 
 export interface Transaction {
-  id: string;
-  userId: string;
-  userName: string;
-  amount: number;
+  id: number;
+  customerPhone: string;
+  billAmount: number;
   pointsEarned: number;
-  pointsSpent: number;
+  pointsRedeemed: number;
   type: 'EARN' | 'REDEEM';
   createdAt: string;
-  cashierId: string;
+  staffId: string;
 }
+
 
 export interface LoyaltyConfig {
   pointsPerRiyal: number;

@@ -29,22 +29,23 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
     if (!phone) return;
     setLookupLoading(true);
     setIsScanning(false);
-    
+
     try {
       const { data, error } = await supabase
         .from('customers')
         .select('*')
-        .eq('phone', phone)
+        .eq('phone_number', phone)
         .maybeSingle();
 
       if (data) {
         setScannedUser({
-          id: data.id,
-          phone: data.phone,
-          name: data.name,
+          id: data.phone_number,
+          phone: data.phone_number,
+          name: data.full_name,
           role: 'CUSTOMER',
           points: data.points_balance || 0
         });
+
       } else {
         alert("هذا الرقم غير مسجل في نظام ولاء جمر التنور.");
       }
@@ -61,15 +62,15 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
 
     const pointsToEarn = billAmount * config.pointsPerRiyal;
     const pointsToRedeem = billAmount * config.pointsToRedeem1SAR;
-    
+
     if (type === 'REDEEM' && scannedUser.points < pointsToRedeem) {
       alert("عذراً، رصيد العميل غير كافٍ للاستبدال.");
       setProcessing(false);
       return;
     }
 
-    const newPoints = type === 'EARN' 
-      ? scannedUser.points + pointsToEarn 
+    const newPoints = type === 'EARN'
+      ? scannedUser.points + pointsToEarn
       : scannedUser.points - pointsToRedeem;
 
     try {
@@ -77,24 +78,24 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
       const { error: updateError } = await supabase
         .from('customers')
         .update({ points_balance: newPoints })
-        .eq('id', scannedUser.id);
+        .eq('phone_number', scannedUser.phone);
+
 
       if (updateError) throw updateError;
 
       // 2. تسجيل العملية
       await supabase.from('transactions').insert([{
-        user_id: scannedUser.id,
-        user_name: scannedUser.name,
-        amount: billAmount,
+        customer_phone: scannedUser.phone,
+        bill_amount: billAmount,
         points_earned: type === 'EARN' ? pointsToEarn : 0,
-        points_spent: type === 'REDEEM' ? pointsToRedeem : 0,
-        type: type,
-        cashier_id: cashier.id
+        points_redeemed: type === 'REDEEM' ? pointsToRedeem : 0,
+        staff_id: cashier.id
       }]);
+
 
       setScannedUser({ ...scannedUser, points: newPoints });
       setSuccessMessage(type === 'EARN' ? `تمت إضافة ${pointsToEarn} نقطة بنجاح!` : `تم تطبيق الخصم: ${formatCurrency(billAmount)}`);
-      
+
       successTimeoutRef.current = window.setTimeout(() => {
         setScannedUser(null);
         setBillAmount(0);
@@ -137,7 +138,7 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
             ) : (
               <div className="text-center p-8">
                 <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 text-zinc-600">
-                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h3m-3 0H9m11-3a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-5z" /></svg>
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h3m-3 0H9m11-3a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h11a2 2 0 002-2v-5z" /></svg>
                 </div>
                 <button onClick={startScanner} className="bg-orange-600 hover:bg-orange-500 text-white font-black px-10 py-4 rounded-2xl shadow-lg transition-all active:scale-95">فتح الكاميرا للمسح</button>
               </div>
@@ -147,15 +148,15 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
           <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[2rem] space-y-4 shadow-xl">
             <p className="text-xs font-bold text-zinc-500 text-center uppercase tracking-widest">أو البحث برقم الجوال</p>
             <div className="flex gap-2">
-              <input 
-                type="tel" 
-                placeholder="05xxxxxxxx" 
+              <input
+                type="tel"
+                placeholder="05xxxxxxxx"
                 value={manualPhone}
                 onChange={(e) => setManualPhone(e.target.value)}
                 className="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 text-center font-bold text-lg"
               />
-              <button 
-                onClick={() => handleLookup(manualPhone)} 
+              <button
+                onClick={() => handleLookup(manualPhone)}
                 disabled={lookupLoading}
                 className="bg-zinc-800 px-6 rounded-xl font-bold hover:bg-zinc-700 transition-colors disabled:opacity-50"
               >
@@ -167,55 +168,55 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
       ) : (
         <div className="space-y-6 animate-in zoom-in-95 duration-300">
           <div className="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-6 relative overflow-hidden shadow-2xl">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/5 rounded-full blur-3xl"></div>
-             <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className="flex gap-3 items-center">
-                  <div className="w-12 h-12 bg-zinc-800 rounded-2xl flex items-center justify-center border border-zinc-700 text-orange-500 font-black text-xl shadow-inner">
-                    {scannedUser.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="text-white font-bold">{scannedUser.name}</h3>
-                    <p className="text-zinc-500 text-[10px] font-mono tracking-widest">{scannedUser.phone}</p>
-                  </div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/5 rounded-full blur-3xl"></div>
+            <div className="flex justify-between items-start mb-6 relative z-10">
+              <div className="flex gap-3 items-center">
+                <div className="w-12 h-12 bg-zinc-800 rounded-2xl flex items-center justify-center border border-zinc-700 text-orange-500 font-black text-xl shadow-inner">
+                  {scannedUser.name.charAt(0)}
                 </div>
-                <button onClick={() => setScannedUser(null)} className="p-2 text-zinc-600 hover:text-white transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-             </div>
-             <div className="grid grid-cols-2 gap-4 relative z-10">
-                <div className="bg-black/40 p-4 rounded-2xl border border-zinc-800/50 backdrop-blur-sm">
-                  <p className="text-[10px] text-zinc-500 font-black mb-1">رصيد النقاط</p>
-                  <p className="text-2xl font-black text-white">{scannedUser.points}</p>
+                <div>
+                  <h3 className="text-white font-bold">{scannedUser.name}</h3>
+                  <p className="text-zinc-500 text-[10px] font-mono tracking-widest">{scannedUser.phone}</p>
                 </div>
-                <div className="bg-black/40 p-4 rounded-2xl border border-zinc-800/50 backdrop-blur-sm">
-                  <p className="text-[10px] text-zinc-500 font-black mb-1">القيمة الحالية</p>
-                  <p className="text-2xl font-black text-orange-500">{formatCurrency(scannedUser.points / config.pointsToRedeem1SAR)}</p>
-                </div>
-             </div>
+              </div>
+              <button onClick={() => setScannedUser(null)} className="p-2 text-zinc-600 hover:text-white transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-4 relative z-10">
+              <div className="bg-black/40 p-4 rounded-2xl border border-zinc-800/50 backdrop-blur-sm">
+                <p className="text-[10px] text-zinc-500 font-black mb-1">رصيد النقاط</p>
+                <p className="text-2xl font-black text-white">{scannedUser.points}</p>
+              </div>
+              <div className="bg-black/40 p-4 rounded-2xl border border-zinc-800/50 backdrop-blur-sm">
+                <p className="text-[10px] text-zinc-500 font-black mb-1">القيمة الحالية</p>
+                <p className="text-2xl font-black text-orange-500">{formatCurrency(scannedUser.points / config.pointsToRedeem1SAR)}</p>
+              </div>
+            </div>
           </div>
 
           <div className="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-6 space-y-6 shadow-2xl">
             <div className="space-y-1">
-               <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">مبلغ الفاتورة (ريال)</label>
-               <input 
-                type="number" 
-                value={billAmount || ''} 
+              <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-1">مبلغ الفاتورة (ريال)</label>
+              <input
+                type="number"
+                value={billAmount || ''}
                 onChange={(e) => setBillAmount(parseFloat(e.target.value))}
                 placeholder="0.00"
                 className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-6 text-4xl font-black text-orange-500 focus:outline-none focus:border-orange-500/50 text-center transition-all shadow-inner"
               />
             </div>
             <div className="grid grid-cols-1 gap-3">
-              <button 
-                onClick={() => handleAction('EARN')} 
-                disabled={processing || billAmount <= 0} 
+              <button
+                onClick={() => handleAction('EARN')}
+                disabled={processing || billAmount <= 0}
                 className="bg-zinc-800 hover:bg-zinc-700 text-white font-black py-5 rounded-2xl border border-zinc-700 transition-all active:scale-95 disabled:opacity-50"
               >
                 إضافة نقاط ({Math.round(billAmount * config.pointsPerRiyal || 0)})
               </button>
-              <button 
-                onClick={() => handleAction('REDEEM')} 
-                disabled={processing || billAmount <= 0 || scannedUser.points < (billAmount * config.pointsToRedeem1SAR)} 
+              <button
+                onClick={() => handleAction('REDEEM')}
+                disabled={processing || billAmount <= 0 || scannedUser.points < (billAmount * config.pointsToRedeem1SAR)}
                 className="bg-orange-600 hover:bg-orange-500 text-white font-black py-5 rounded-2xl shadow-xl shadow-orange-900/30 transition-all active:scale-95 disabled:opacity-50"
               >
                 استبدال وخصم ({Math.round(billAmount * config.pointsToRedeem1SAR || 0)} نقطة)

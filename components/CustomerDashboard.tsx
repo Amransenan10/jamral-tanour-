@@ -20,24 +20,24 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, config }) =
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('customer_phone', user.phone)
         .order('created_at', { ascending: false })
         .limit(10);
-      
+
       if (data) {
         setTransactions(data.map(t => ({
           id: t.id,
-          userId: t.user_id,
-          userName: t.user_name,
-          amount: t.amount,
+          customerPhone: t.customer_phone,
+          billAmount: t.bill_amount,
           pointsEarned: t.points_earned,
-          pointsSpent: t.points_spent,
-          type: t.type,
+          pointsRedeemed: t.points_redeemed,
+          type: t.points_earned > 0 ? 'EARN' : 'REDEEM',
           createdAt: t.created_at,
-          cashierId: t.cashier_id
+          staffId: t.staff_id
         })));
       }
     };
+
     fetchHistory();
   }, [user.id, user.points]);
 

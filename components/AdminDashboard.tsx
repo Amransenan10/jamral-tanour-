@@ -27,13 +27,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin, config, onUpdate
         const { data: pointsData } = await supabase
           .from('customers')
           .select('points_balance');
-        
+
         const totalPoints = pointsData?.reduce((acc, curr) => acc + (curr.points_balance || 0), 0) || 0;
 
         // 3. جلب نشاط آخر 7 أيام (Weekly Activity)
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
+
         const { data: txData } = await supabase
           .from('transactions')
           .select('created_at')
@@ -43,9 +43,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin, config, onUpdate
         const activity = [0, 0, 0, 0, 0, 0, 0];
         txData?.forEach(tx => {
           const day = new Date(tx.created_at).getDay();
-          // ترتيب الأيام لتبدأ من الأحد (0) إلى السبت (6)
           activity[day]++;
         });
+
 
         // تطبيع البيانات للرسم (أعلى يوم هو 100%)
         const max = Math.max(...activity, 1);
@@ -62,7 +62,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin, config, onUpdate
         setLoading(false);
       }
     };
-    
+
     fetchLiveStats();
   }, []);
 
@@ -100,8 +100,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin, config, onUpdate
           {stats.weeklyActivity.map((h, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
               <div className="w-full bg-zinc-800/50 rounded-xl relative h-full overflow-hidden">
-                <div 
-                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-orange-600 to-orange-400 rounded-xl transition-all duration-1000 ease-out group-hover:from-orange-500 shadow-[0_0_10px_rgba(234,88,12,0.3)]" 
+                <div
+                  className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-orange-600 to-orange-400 rounded-xl transition-all duration-1000 ease-out group-hover:from-orange-500 shadow-[0_0_10px_rgba(234,88,12,0.3)]"
                   style={{ height: `${h}%` }}
                 ></div>
               </div>
@@ -122,23 +122,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin, config, onUpdate
         <div className="grid grid-cols-1 gap-8">
           <div className="space-y-3">
             <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-2">نقاط الربح (لكل 1 ريال دفع)</label>
-            <input 
+            <input
               type="number" value={editingConfig.pointsPerRiyal}
-              onChange={(e) => setEditingConfig({...editingConfig, pointsPerRiyal: parseInt(e.target.value)})}
+              onChange={(e) => setEditingConfig({ ...editingConfig, pointsPerRiyal: parseInt(e.target.value) })}
               className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 font-black text-2xl text-orange-500 focus:outline-none focus:border-orange-500/50 shadow-inner"
             />
           </div>
           <div className="space-y-3">
             <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-2">نقاط الاستبدال (مقابل 1 ريال خصم)</label>
-            <input 
+            <input
               type="number" value={editingConfig.pointsToRedeem1SAR}
-              onChange={(e) => setEditingConfig({...editingConfig, pointsToRedeem1SAR: parseInt(e.target.value)})}
+              onChange={(e) => setEditingConfig({ ...editingConfig, pointsToRedeem1SAR: parseInt(e.target.value) })}
               className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 font-black text-2xl text-orange-500 focus:outline-none focus:border-orange-500/50 shadow-inner"
             />
           </div>
         </div>
-        <button 
-          onClick={handleSave} 
+        <button
+          onClick={handleSave}
           className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-5 rounded-[1.5rem] shadow-xl shadow-orange-900/30 transition-all active:scale-95"
         >
           حفظ التغييرات السحابية

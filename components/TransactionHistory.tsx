@@ -16,7 +16,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
         </svg>
         سجل العمليات الأخير
       </h3>
-      
+
       {transactions.length === 0 ? (
         <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-8 text-center">
           <p className="text-zinc-600 text-xs">لا توجد عمليات مسجلة بعد</p>
@@ -48,12 +48,13 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
               </div>
               <div className="text-right">
                 <p className={`text-sm font-black ${tx.type === 'EARN' ? 'text-green-500' : 'text-orange-500'}`}>
-                  {tx.type === 'EARN' ? `+${tx.pointsEarned}` : `-${tx.pointsSpent}`}
+                  {tx.type === 'EARN' ? `+${tx.pointsEarned}` : `-${tx.pointsRedeemed}`}
                 </p>
-                <p className="text-[10px] text-zinc-600">{formatCurrency(tx.amount)}</p>
+                <p className="text-[10px] text-zinc-600">{formatCurrency(tx.billAmount)}</p>
               </div>
             </div>
           ))}
+
         </div>
       )}
     </div>

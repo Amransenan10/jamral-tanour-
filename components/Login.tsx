@@ -27,18 +27,20 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
         const { data: customer, error } = await supabase
           .from('customers')
           .select('*')
-          .eq('phone', phone)
+          .eq('phone_number', phone)
           .maybeSingle();
+
 
         if (customer) {
           // عميل موجود - تسجيل دخول مباشر
           onLogin(phone, 'CUSTOMER', {
-            id: customer.id,
-            phone: customer.phone,
-            name: customer.name,
+            id: customer.phone_number,
+            phone: customer.phone_number,
+            name: customer.full_name,
             role: 'CUSTOMER',
             points: customer.points_balance || 0
           });
+
         } else if (!isNewCustomer) {
           // عميل غير موجود - نطلب الاسم لأول مرة
           setIsNewCustomer(true);
@@ -47,36 +49,52 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
           const { data: newCust, error: insError } = await supabase
             .from('customers')
             .insert([{
-              phone: phone,
-              name: name,
+              phone_number: phone,
+              full_name: name,
               points_balance: 0
             }])
             .select()
             .single();
+
 
           if (insError) throw insError;
 
           if (newCust) {
             // توجيه تلقائي بعد التسجيل (Redirect)
             onLogin(phone, 'CUSTOMER', {
-              id: newCust.id,
-              phone: newCust.phone,
-              name: newCust.name,
+              id: newCust.phone_number,
+              phone: newCust.phone_number,
+              name: newCust.full_name,
               role: 'CUSTOMER',
               points: 0
             });
+
           }
         }
       } else {
-        // منطق الموظفين (محاكاة)
-        onLogin(username, role, {
-          id: role === 'ADMIN' ? 'admin_id_001' : 'cashier_id_001',
-          phone: '000',
-          name: role === 'ADMIN' ? 'المدير العام' : 'كاشير المناوبة',
-          role,
-          points: 0
-        });
+        // منطق الموظفين الحقيقي
+        const { data: staffMember, error: staffError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('username', username)
+          .eq('password', password)
+          .maybeSingle();
+
+        if (staffError) throw staffError;
+
+        if (staffMember) {
+          onLogin(username, staffMember.role.toUpperCase() as UserRole, {
+            id: staffMember.id,
+            phone: '000',
+            name: staffMember.role === 'admin' ? 'المدير العام' : 'موظف جمر التنور',
+            role: staffMember.role.toUpperCase() as UserRole,
+            points: 0
+          });
+        } else {
+          alert("خطأ في اسم المستخدم أو كلمة المرور");
+        }
       }
+
     } catch (err: any) {
       console.error("Login Error:", err);
       alert(`حدث خطأ في الاتصال: ${err.message || 'يرجى التحقق من مفاتيح Supabase أو وجود الجداول'}`);
