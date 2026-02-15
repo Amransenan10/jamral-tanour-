@@ -112,10 +112,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-white overflow-hidden relative">
       <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full h-64 bg-orange-600/10 blur-[100px] rounded-full"></div>
 
-      <div className="w-20 h-20 bg-orange-600 rounded-2xl flex items-center justify-center shadow-[0_0_50px_rgba(234,88,12,0.4)] mb-8 animate-pulse">
-        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99a7.99 0 01-4.812 10.27L15 19l2.657-2.343z" />
-        </svg>
+      <div className="w-24 h-24 bg-zinc-900 rounded-3xl flex items-center justify-center shadow-[0_0_50px_rgba(234,88,12,0.2)] border border-orange-500/20 mb-8 overflow-hidden animate-pulse">
+        <img src="/logo.svg" alt="جمر التنور" className="w-20 h-20 object-contain" />
       </div>
 
       <h1 className="text-3xl font-black mb-2 tracking-tighter">جمر التنور</h1>
