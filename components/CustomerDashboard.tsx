@@ -13,7 +13,10 @@ interface CustomerDashboardProps {
 
 const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, config }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const pointsValue = user.points / config.pointsToRedeem1SAR;
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+  const lastPointsRef = useRef(user.points);
+
+  const pointsValue = user.points / config.redemption_rate;
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -39,6 +42,20 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, config }) =
     };
 
     fetchHistory();
+
+    // نظام الإشعارات عند تغير النقاط
+    if (user.points !== lastPointsRef.current) {
+      const diff = user.points - lastPointsRef.current;
+      if (diff > 0) {
+        setToast({ message: `تم إضافة ${diff} نقطة لرصيدك بنجاح! 🎊`, type: 'success' });
+      } else if (diff < 0) {
+        setToast({ message: `تم استبدال ${Math.abs(diff)} نقطة، رصيدك الحالي هو ${user.points} 🎁`, type: 'info' });
+      }
+      lastPointsRef.current = user.points;
+
+      const timer = setTimeout(() => setToast(null), 5000);
+      return () => clearTimeout(timer);
+    }
   }, [user.id, user.points]);
 
   return (
@@ -70,13 +87,20 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, config }) =
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-[2rem]">
           <p className="text-[10px] font-black text-zinc-500 uppercase mb-1">الربح</p>
-          <p className="text-sm font-black text-white">{config.pointsPerRiyal} نقطة / ريال</p>
+          <p className="text-sm font-black text-white">{config.earning_rate} نقطة / ريال</p>
         </div>
         <div className="bg-zinc-900 border border-zinc-800 p-5 rounded-[2rem]">
           <p className="text-[10px] font-black text-zinc-500 uppercase mb-1">الاستبدال</p>
-          <p className="text-sm font-black text-white">{config.pointsToRedeem1SAR} نقطة = 1 ريال</p>
+          <p className="text-sm font-black text-white">{config.redemption_rate} نقطة = 1 ريال</p>
         </div>
       </div>
+
+      {toast && (
+        <div className={`fixed top-10 inset-x-4 p-6 rounded-[2rem] shadow-2xl text-center font-black animate-in slide-in-from-top-10 z-[100] flex items-center justify-center gap-3 border ${toast.type === 'success' ? 'bg-green-600 border-green-400' : 'bg-orange-600 border-orange-400'
+          }`}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 };

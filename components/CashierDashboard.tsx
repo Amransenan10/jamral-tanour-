@@ -112,8 +112,8 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
     if (!scannedUser || billAmount <= 0) return;
     setProcessing(true);
 
-    const pointsToEarn = billAmount * config.pointsPerRiyal;
-    const pointsToRedeem = billAmount * config.pointsToRedeem1SAR;
+    const pointsToEarn = billAmount * config.earning_rate;
+    const pointsToRedeem = billAmount * config.redemption_rate;
 
     if (type === 'REDEEM' && scannedUser.points < pointsToRedeem) {
       alert("عذراً، رصيد العميل غير كافٍ للاستبدال.");
@@ -257,7 +257,7 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
               </div>
               <div className="bg-black/40 p-4 rounded-2xl border border-zinc-800/50 backdrop-blur-sm">
                 <p className="text-[10px] text-zinc-500 font-black mb-1">القيمة الحالية</p>
-                <p className="text-2xl font-black text-orange-500">{formatCurrency(scannedUser.points / config.pointsToRedeem1SAR)}</p>
+                <p className="text-2xl font-black text-orange-500">{formatCurrency(scannedUser.points / config.redemption_rate)}</p>
               </div>
             </div>
           </div>
@@ -279,14 +279,17 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
                 disabled={processing || billAmount <= 0}
                 className="bg-zinc-800 hover:bg-zinc-700 text-white font-black py-5 rounded-2xl border border-zinc-700 transition-all active:scale-95 disabled:opacity-50"
               >
-                إضافة نقاط ({Math.round(billAmount * config.pointsPerRiyal || 0)})
+                إضافة نقاط ({Math.round(billAmount * config.earning_rate || 0)})
               </button>
               <button
                 onClick={() => handleAction('REDEEM')}
-                disabled={processing || billAmount <= 0 || scannedUser.points < (billAmount * config.pointsToRedeem1SAR)}
-                className="bg-orange-600 hover:bg-orange-500 text-white font-black py-5 rounded-2xl shadow-xl shadow-orange-900/30 transition-all active:scale-95 disabled:opacity-50"
+                disabled={processing || billAmount <= 0 || scannedUser.points < (billAmount * config.redemption_rate)}
+                className={`text-white font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50 ${scannedUser.points >= (billAmount * config.redemption_rate) && billAmount > 0
+                    ? 'bg-orange-600 hover:bg-orange-500 shadow-orange-900/40 ring-2 ring-orange-500/50 ring-offset-4 ring-offset-black'
+                    : 'bg-zinc-800 hover:bg-zinc-700'
+                  }`}
               >
-                استبدال وخصم ({Math.round(billAmount * config.pointsToRedeem1SAR || 0)} نقطة)
+                استبدال مكافأة ({Math.round(billAmount * config.redemption_rate || 0)} نقطة)
               </button>
             </div>
           </div>

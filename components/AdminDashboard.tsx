@@ -119,24 +119,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ admin, config, onUpdate
           </div>
           إعدادات قيمة النقاط
         </h3>
-        <div className="grid grid-cols-1 gap-8">
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-2">نقاط الربح (لكل 1 ريال دفع)</label>
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs text-zinc-500 font-bold">معدل كسب النقاط (لكل 1 ريال)</label>
             <input
-              type="number" value={editingConfig.pointsPerRiyal}
-              onChange={(e) => setEditingConfig({ ...editingConfig, pointsPerRiyal: parseInt(e.target.value) })}
-              className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 font-black text-2xl text-orange-500 focus:outline-none focus:border-orange-500/50 shadow-inner"
+              type="number"
+              value={config.earning_rate}
+              onChange={(e) => onUpdateConfig({ ...config, earning_rate: parseFloat(e.target.value) })}
+              className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 font-bold"
             />
           </div>
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest px-2">نقاط الاستبدال (مقابل 1 ريال خصم)</label>
+          <div className="space-y-1">
+            <label className="text-xs text-zinc-500 font-bold">قيمة الريال عند الاستبدال (نقاط)</label>
             <input
-              type="number" value={editingConfig.pointsToRedeem1SAR}
-              onChange={(e) => setEditingConfig({ ...editingConfig, pointsToRedeem1SAR: parseInt(e.target.value) })}
-              className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 font-black text-2xl text-orange-500 focus:outline-none focus:border-orange-500/50 shadow-inner"
+              type="number"
+              value={config.redemption_rate}
+              onChange={(e) => onUpdateConfig({ ...config, redemption_rate: parseFloat(e.target.value) })}
+              className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 font-bold"
             />
           </div>
         </div>
+
         <button
           onClick={handleSave}
           className="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-5 rounded-[1.5rem] shadow-xl shadow-orange-900/30 transition-all active:scale-95"

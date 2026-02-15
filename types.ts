@@ -24,6 +24,7 @@ export interface Transaction {
 
 
 export interface LoyaltyConfig {
-  pointsPerRiyal: number;
-  pointsToRedeem1SAR: number;
+  earning_rate: number;
+  redemption_rate: number;
 }
+

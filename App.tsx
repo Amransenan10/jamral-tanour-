@@ -14,8 +14,8 @@ const App: React.FC = () => {
   const [initError, setInitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState<LoyaltyConfig>({
-    pointsPerRiyal: INITIAL_CONFIG.POINTS_PER_RIYAL,
-    pointsToRedeem1SAR: INITIAL_CONFIG.POINTS_TO_REDEEM_1_SAR
+    earning_rate: INITIAL_CONFIG.POINTS_PER_RIYAL,
+    redemption_rate: INITIAL_CONFIG.POINTS_TO_REDEEM_1_SAR
   });
 
 
@@ -31,9 +31,9 @@ const App: React.FC = () => {
         }
 
         if (data) {
-          const pointsPerRiyal = data.find(s => s.key === 'points_per_riyal')?.value || INITIAL_CONFIG.POINTS_PER_RIYAL;
-          const pointsToRedeem = data.find(s => s.key === 'points_to_redeem_1sar')?.value || INITIAL_CONFIG.POINTS_TO_REDEEM_1_SAR;
-          setConfig({ pointsPerRiyal, pointsToRedeem1SAR: pointsToRedeem });
+          const earning_rate = data.find(s => s.key === 'earning_rate')?.value ?? INITIAL_CONFIG.POINTS_PER_RIYAL;
+          const redemption_rate = data.find(s => s.key === 'redemption_rate')?.value ?? INITIAL_CONFIG.POINTS_TO_REDEEM_1_SAR;
+          setConfig({ earning_rate, redemption_rate });
         }
       } catch (err: any) {
         console.error("Initialization Error:", err);
@@ -46,8 +46,8 @@ const App: React.FC = () => {
     try {
       setConfig(newConfig);
       await supabase.from('settings').upsert([
-        { key: 'points_per_riyal', value: newConfig.pointsPerRiyal },
-        { key: 'points_to_redeem_1sar', value: newConfig.pointsToRedeem1SAR }
+        { key: 'earning_rate', value: newConfig.earning_rate },
+        { key: 'redemption_rate', value: newConfig.redemption_rate }
       ]);
     } catch (err: any) {
       alert("فشل تحديث الإعدادات: " + err.message);
