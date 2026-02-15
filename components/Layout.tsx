@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
       {/* Header / Logo Area */}
       <header className="p-6 flex flex-col items-center border-b border-zinc-800">
         <div className="w-20 h-20 bg-zinc-900 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(234,88,12,0.1)] border border-orange-500/20 mb-4 overflow-hidden">
-          <img src="/logo.svg" alt="جمر التنور" className="w-16 h-16 object-contain" />
+          <img src="/logo.png" alt="جمر التنور" className="w-16 h-16 object-contain" />
         </div>
         <h1 className="text-2xl font-black tracking-widest text-orange-500 uppercase">جمر التنور</h1>
         <p className="text-zinc-500 text-sm mt-1">نظام الولاء والمكافآت</p>

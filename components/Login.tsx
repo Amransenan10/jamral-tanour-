@@ -113,7 +113,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
       <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-full h-64 bg-orange-600/10 blur-[100px] rounded-full"></div>
 
       <div className="w-24 h-24 bg-zinc-900 rounded-3xl flex items-center justify-center shadow-[0_0_50px_rgba(234,88,12,0.2)] border border-orange-500/20 mb-8 overflow-hidden animate-pulse">
-        <img src="/logo.svg" alt="جمر التنور" className="w-20 h-20 object-contain" />
+        <img src="/logo.png" alt="جمر التنور" className="w-20 h-20 object-contain" />
       </div>
 
       <h1 className="text-3xl font-black mb-2 tracking-tighter">جمر التنور</h1>
