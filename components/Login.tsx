@@ -83,16 +83,18 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
         if (staffError) throw staffError;
 
         if (staffMember) {
-          onLogin(username, staffMember.role.toUpperCase() as UserRole, {
+          const uiRole = staffMember.role.toUpperCase() as UserRole;
+          onLogin(username, uiRole, {
             id: staffMember.id,
-            phone: '000',
+            phone: '---', // موظف
             name: staffMember.role === 'admin' ? 'المدير العام' : 'موظف جمر التنور',
-            role: staffMember.role.toUpperCase() as UserRole,
+            role: uiRole,
             points: 0
           });
         } else {
           alert("خطأ في اسم المستخدم أو كلمة المرور");
         }
+
       }
 
     } catch (err: any) {

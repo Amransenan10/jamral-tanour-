@@ -6,37 +6,32 @@ interface QRCodeDisplayProps {
 }
 
 const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ value }) => {
-  // هنا نستخدم مكتبة خارجية لإنشاء QR، في هذا المثال سنصنع تمثيلاً بصرياً جمالياً
-  // باستخدام SVG نظراً لأنها SPA كاملة الميزات.
+  // استخدام خدمة api.qrserver.com لإنشاء كود QR حقيقي ومرتبط برقم الجوال
+  // لضمان الثبات والأمان وتسهيل المسح للكاشير
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(value)}`;
+
   return (
-    <div className="relative p-4 bg-white rounded-3xl shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-      <div className="w-48 h-48 bg-white flex items-center justify-center overflow-hidden">
-        {/* Mock QR for visual purpose */}
-        <svg viewBox="0 0 100 100" className="w-full h-full text-black">
-          <rect x="10" y="10" width="20" height="20" fill="currentColor" />
-          <rect x="70" y="10" width="20" height="20" fill="currentColor" />
-          <rect x="10" y="70" width="20" height="20" fill="currentColor" />
-          <rect x="40" y="40" width="20" height="20" fill="currentColor" />
-          <rect x="35" y="10" width="5" height="5" fill="currentColor" />
-          <rect x="50" y="20" width="10" height="10" fill="currentColor" />
-          <rect x="70" y="40" width="15" height="15" fill="currentColor" />
-          <rect x="40" y="70" width="10" height="20" fill="currentColor" />
-          <rect x="80" y="80" width="10" height="10" fill="currentColor" />
-          <rect x="15" y="15" width="10" height="10" fill="white" />
-          <rect x="75" y="15" width="10" height="10" fill="white" />
-          <rect x="15" y="75" width="10" height="10" fill="white" />
-        </svg>
+    <div className="relative p-6 bg-white rounded-[2.5rem] shadow-[0_0_50px_rgba(255,255,255,0.05)] border border-white/10 transition-transform hover:scale-105 duration-500">
+      <div className="w-48 h-48 bg-white flex items-center justify-center overflow-hidden rounded-2xl relative">
+        <img
+          src={qrUrl}
+          alt="رصيد الولاء - جمر التنور"
+          className="w-40 h-40 object-contain"
+        />
+
+        {/* Zebra lines for aesthetic security feel */}
+        <div className="absolute inset-0 border-2 border-orange-600/20 rounded-2xl pointer-events-none"></div>
       </div>
-      {/* Branding inside QR */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="bg-orange-600 p-1.5 rounded-lg border-4 border-white shadow-xl">
-           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99a7.99a 10.27L15 19l2.657-2.343z" />
-          </svg>
+
+      {/* Branding inside QR Area */}
+      <div className="mt-4 flex flex-col items-center">
+        <div className="bg-orange-600 px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-widest shadow-lg shadow-orange-900/30">
+          JAMR AL-TANOUR
         </div>
       </div>
     </div>
   );
 };
+
 
 export default QRCodeDisplay;

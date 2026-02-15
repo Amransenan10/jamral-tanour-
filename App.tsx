@@ -84,6 +84,7 @@ const App: React.FC = () => {
       {user.role === 'CASHIER' && <CashierDashboard cashier={user} config={config} />}
       {user.role === 'ADMIN' && <AdminDashboard admin={user} config={config} onUpdateConfig={updateConfig} />}
     </Layout>
+
   );
 };
 
