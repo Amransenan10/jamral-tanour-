@@ -17,6 +17,28 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading, forced
   const [password, setPassword] = useState('');
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [internalLoading, setInternalLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+
+  const validatePhone = (value: string) => {
+    // Regular expression: starts with 05 (10 digits) or starts with 5 (9 digits)
+    const phoneRegex = /^(05|5)\d{8}$/;
+    if (!value) {
+      setPhoneError('');
+      return false;
+    }
+    if (!/^\d+$/.test(value)) {
+      setPhoneError('يرجى إدخال أرقام فقط');
+      return false;
+    }
+    if (!phoneRegex.test(value)) {
+      setPhoneError('يرجى إدخال رقم جوال سعودي صحيح يبدأ بـ 05 أو 5');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const isPhoneValid = role === 'CUSTOMER' ? /^(05|5)\d{8}$/.test(phone) : true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,10 +188,18 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading, forced
                   type="tel"
                   placeholder="05xxxxxxxx"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-4 focus:outline-none focus:border-orange-500 transition-all text-lg font-bold tracking-[0.2em]"
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    validatePhone(e.target.value);
+                  }}
+                  className={`w-full bg-zinc-900 border ${phoneError ? 'border-red-500' : 'border-zinc-800'} rounded-2xl px-5 py-4 focus:outline-none focus:border-orange-500 transition-all text-lg font-bold tracking-[0.2em]`}
                   required
                 />
+                {phoneError && (
+                  <p className="text-red-500 text-[11px] font-bold px-1 mt-1 animate-in slide-in-from-top-1 duration-200">
+                    {phoneError}
+                  </p>
+                )}
               </div>
               {isNewCustomer && (
                 <div className="space-y-1.5 animate-in zoom-in-95 duration-300">
@@ -215,8 +245,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading, forced
 
         <button
           type="submit"
-          disabled={isLoading}
-          className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-black py-5 rounded-[1.5rem] shadow-xl shadow-orange-900/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg"
+          disabled={isLoading || !isPhoneValid}
+          className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black py-5 rounded-[1.5rem] shadow-xl shadow-orange-900/20 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg"
         >
           {isLoading ? (
             <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
