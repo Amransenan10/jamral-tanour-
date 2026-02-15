@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, Transaction, LoyaltyConfig } from '../types';
 import { formatCurrency } from '../constants';
 import QRCodeDisplay from './QRCodeDisplay';
@@ -14,30 +14,39 @@ interface CustomerDashboardProps {
 const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, config }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
+  const [loading, setLoading] = useState(true);
   const lastPointsRef = useRef(user.points);
 
-  const pointsValue = user.points / config.redemption_rate;
+  const pointsValue = config.redemption_rate > 0 ? user.points / config.redemption_rate : 0;
 
   useEffect(() => {
     const fetchHistory = async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('customer_phone', user.phone)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      console.log("CustomerDashboard: Starting to fetch transactions for:", user.phone);
+      try {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('customer_phone', user.phone)
+          .order('created_at', { ascending: false })
+          .limit(10);
 
-      if (data) {
-        setTransactions(data.map(t => ({
-          id: t.id,
-          customerPhone: t.customer_phone,
-          billAmount: t.bill_amount,
-          pointsEarned: t.points_earned,
-          pointsRedeemed: t.points_redeemed,
-          type: t.points_earned > 0 ? 'EARN' : 'REDEEM',
-          createdAt: t.created_at,
-          staffId: t.staff_id
-        })));
+        console.log("CustomerDashboard: Transactions fetch result:", data, "Error:", error);
+        if (data) {
+          setTransactions(data.map(t => ({
+            id: t.id,
+            customerPhone: t.customer_phone,
+            billAmount: t.bill_amount,
+            pointsEarned: t.points_earned,
+            pointsRedeemed: t.points_redeemed,
+            type: t.points_earned > 0 ? 'EARN' : 'REDEEM',
+            createdAt: t.created_at,
+            staffId: t.staff_id
+          })));
+        }
+      } catch (err) {
+        console.error("CustomerDashboard: Error fetching history:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -57,6 +66,15 @@ const CustomerDashboard: React.FC<CustomerDashboardProps> = ({ user, config }) =
       return () => clearTimeout(timer);
     }
   }, [user.id, user.points]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-zinc-500 font-bold animate-pulse">جاري تحميل بياناتك...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">

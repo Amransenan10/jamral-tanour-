@@ -20,6 +20,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setInternalLoading(true);
+    console.log("Starting login for role:", role, "with phone:", phone);
 
     try {
       if (role === 'CUSTOMER') {
@@ -30,18 +31,26 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
           .eq('phone_number', phone)
           .maybeSingle();
 
+        console.log("Search result for customer:", customer, "Error:", error);
+        if (error) {
+          console.error("Supabase Select Error:", error);
+          throw error;
+        }
+
 
         if (customer) {
+          console.log("Customer found, logging in...");
           // عميل موجود - تسجيل دخول مباشر
           onLogin(phone, 'CUSTOMER', {
             id: customer.phone_number,
             phone: customer.phone_number,
-            name: customer.full_name,
+            name: customer.full_name || 'عميل جمر التنور',
             role: 'CUSTOMER',
             points: customer.points_balance || 0
           });
 
         } else if (!isNewCustomer) {
+          console.log("Customer not found, showing registration form.");
           // عميل غير موجود - نطلب الاسم لأول مرة
           setIsNewCustomer(true);
         } else {
@@ -56,10 +65,17 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
             .select()
             .single();
 
+          console.log("Insertion result for new client:", newCust, "Error:", insError);
+          if (insError) {
+            console.error("Supabase Insert Error:", insError);
+            throw insError;
+          }
+
 
           if (insError) throw insError;
 
           if (newCust) {
+            console.log("New customer created, logging in...");
             // توجيه تلقائي بعد التسجيل (Redirect)
             onLogin(phone, 'CUSTOMER', {
               id: newCust.phone_number,

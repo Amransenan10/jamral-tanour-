@@ -239,7 +239,7 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
             <div className="flex justify-between items-start mb-6 relative z-10">
               <div className="flex gap-3 items-center">
                 <div className="w-12 h-12 bg-zinc-800 rounded-2xl flex items-center justify-center border border-zinc-700 text-orange-500 font-black text-xl shadow-inner">
-                  {scannedUser.name.charAt(0)}
+                  {(scannedUser.name || 'U').charAt(0)}
                 </div>
                 <div>
                   <h3 className="text-white font-bold">{scannedUser.name}</h3>
@@ -285,8 +285,8 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ cashier, config }) 
                 onClick={() => handleAction('REDEEM')}
                 disabled={processing || billAmount <= 0 || scannedUser.points < (billAmount * config.redemption_rate)}
                 className={`text-white font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50 ${scannedUser.points >= (billAmount * config.redemption_rate) && billAmount > 0
-                    ? 'bg-orange-600 hover:bg-orange-500 shadow-orange-900/40 ring-2 ring-orange-500/50 ring-offset-4 ring-offset-black'
-                    : 'bg-zinc-800 hover:bg-zinc-700'
+                  ? 'bg-orange-600 hover:bg-orange-500 shadow-orange-900/40 ring-2 ring-orange-500/50 ring-offset-4 ring-offset-black'
+                  : 'bg-zinc-800 hover:bg-zinc-700'
                   }`}
               >
                 استبدال مكافأة ({Math.round(billAmount * config.redemption_rate || 0)} نقطة)

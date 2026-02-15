@@ -28,7 +28,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
       <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900/80 backdrop-blur-md border-t border-zinc-800 p-4 flex justify-between items-center max-w-lg mx-auto">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
-            <span className="text-xs font-bold text-orange-500">{user.name.charAt(0)}</span>
+            <span className="text-xs font-bold text-orange-500">{(user.name || 'U').charAt(0)}</span>
           </div>
           <div>
             <p className="text-xs text-zinc-400 font-bold">{user.name}</p>

@@ -55,6 +55,7 @@ const App: React.FC = () => {
   };
 
   const handleLogin = (identifier: string, role: UserRole, data: User) => {
+    console.log("App: handleLogin called with data:", data);
     setUser(data);
   };
 
@@ -75,9 +76,11 @@ const App: React.FC = () => {
   }
 
   if (!user) {
+    console.log("App: No user found, rendering Login component");
     return <Login onLogin={handleLogin} loading={loading} />;
   }
 
+  console.log("App: User found, rendering Dashboard with role:", user.role);
   return (
     <Layout user={user} onLogout={handleLogout}>
       {user.role === 'CUSTOMER' && <CustomerDashboard user={user} config={config} />}
