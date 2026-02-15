@@ -6,10 +6,11 @@ import { supabase } from '../supabaseClient';
 interface LoginProps {
   onLogin: (identifier: string, role: UserRole, data: User) => void;
   loading: boolean;
+  forcedRole?: UserRole;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
-  const [role, setRole] = useState<UserRole>('CUSTOMER');
+const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading, forcedRole }) => {
+  const [role, setRole] = useState<UserRole>(forcedRole || 'CUSTOMER');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -140,19 +141,21 @@ const Login: React.FC<LoginProps> = ({ onLogin, loading: externalLoading }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6 relative z-10">
-        <div className="bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800 flex gap-1">
-          {(['CUSTOMER', 'CASHIER', 'ADMIN'] as UserRole[]).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => { setRole(r); setIsNewCustomer(false); }}
-              className={`flex-1 py-3 text-[11px] font-black rounded-xl transition-all duration-300 ${role === r ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/40' : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-            >
-              {r === 'CUSTOMER' ? 'عميل' : r === 'CASHIER' ? 'كاشير' : 'مدير'}
-            </button>
-          ))}
-        </div>
+        {!forcedRole && (
+          <div className="bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800 flex gap-1">
+            {(['CUSTOMER', 'CASHIER', 'ADMIN'] as UserRole[]).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => { setRole(r); setIsNewCustomer(false); }}
+                className={`flex-1 py-3 text-[11px] font-black rounded-xl transition-all duration-300 ${role === r ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/40' : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+              >
+                {r === 'CUSTOMER' ? 'عميل' : r === 'CASHIER' ? 'كاشير' : 'مدير'}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="space-y-4">
           {role === 'CUSTOMER' ? (

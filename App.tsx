@@ -1,23 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { User, UserRole, LoyaltyConfig } from './types';
 import Login from './components/Login';
 import CustomerDashboard from './components/CustomerDashboard';
 import CashierDashboard from './components/CashierDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Layout from './components/Layout';
+import AuthGuard from './components/AuthGuard';
 import { supabase } from './supabaseClient';
 import { LOYALTY_CONFIG as INITIAL_CONFIG } from './constants';
 
-const App: React.FC = () => {
+const MainApp: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [config, setConfig] = useState<LoyaltyConfig>({
     earning_rate: INITIAL_CONFIG.POINTS_PER_RIYAL,
     redemption_rate: INITIAL_CONFIG.POINTS_TO_REDEEM_1_SAR
   });
-
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -57,10 +59,16 @@ const App: React.FC = () => {
   const handleLogin = (identifier: string, role: UserRole, data: User) => {
     console.log("App: handleLogin called with data:", data);
     setUser(data);
+
+    // Redirect to the appropriate dashboard
+    if (role === 'ADMIN') navigate('/admin');
+    else if (role === 'CASHIER') navigate('/cashier');
+    else navigate('/customer');
   };
 
   const handleLogout = () => {
     setUser(null);
+    navigate('/');
   };
 
   if (initError) {
@@ -75,21 +83,50 @@ const App: React.FC = () => {
     );
   }
 
-  if (!user) {
-    console.log("App: No user found, rendering Login component");
-    return <Login onLogin={handleLogin} loading={loading} />;
-  }
-
-  console.log("App: User found, rendering Dashboard with role:", user.role);
   return (
-    <Layout user={user} onLogout={handleLogout}>
-      {user.role === 'CUSTOMER' && <CustomerDashboard user={user} config={config} />}
-      {user.role === 'CASHIER' && <CashierDashboard cashier={user} config={config} />}
-      {user.role === 'ADMIN' && <AdminDashboard admin={user} config={config} onUpdateConfig={updateConfig} />}
-    </Layout>
+    <Routes>
+      {/* Customer Routes */}
+      <Route path="/" element={<Login onLogin={handleLogin} loading={loading} forcedRole="CUSTOMER" />} />
+      <Route path="/customer" element={
+        <AuthGuard user={user} allowedRoles={['CUSTOMER']}>
+          <Layout user={user!} onLogout={handleLogout}>
+            <CustomerDashboard user={user!} config={config} />
+          </Layout>
+        </AuthGuard>
+      } />
 
+      {/* Cashier Routes */}
+      <Route path="/cashier-login" element={<Login onLogin={handleLogin} loading={loading} forcedRole="CASHIER" />} />
+      <Route path="/cashier" element={
+        <AuthGuard user={user} allowedRoles={['CASHIER']}>
+          <Layout user={user!} onLogout={handleLogout}>
+            <CashierDashboard cashier={user!} config={config} />
+          </Layout>
+        </AuthGuard>
+      } />
+
+      {/* Admin Routes */}
+      <Route path="/admin-login" element={<Login onLogin={handleLogin} loading={loading} forcedRole="ADMIN" />} />
+      <Route path="/admin" element={
+        <AuthGuard user={user} allowedRoles={['ADMIN']}>
+          <Layout user={user!} onLogout={handleLogout}>
+            <AdminDashboard admin={user!} config={config} onUpdateConfig={updateConfig} />
+          </Layout>
+        </AuthGuard>
+      } />
+
+      {/* Redirect all other paths to root */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <MainApp />
+    </BrowserRouter>
+  );
+};
 
 export default App;
