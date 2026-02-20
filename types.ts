@@ -13,18 +13,34 @@ export interface User {
 
 export interface Transaction {
   id: number;
-  customerPhone: string;
-  billAmount: number;
-  pointsEarned: number;
-  pointsRedeemed: number;
-  type: 'EARN' | 'REDEEM';
-  createdAt: string;
-  staffId: string;
+  customer_phone: string;
+  bill_amount: number;
+  points_earned: number;
+  points_redeemed: number;
+  created_at: string;
+  staff_id: string;
 }
-
 
 export interface LoyaltyConfig {
   earning_rate: number;
   redemption_rate: number;
 }
 
+export interface Customer {
+  phone_number: string;
+  full_name: string;
+  points_balance: number;
+  created_at: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image_url: string;
+  ingredients: string[];
+  calories: number;
+  created_at: string;
+}
